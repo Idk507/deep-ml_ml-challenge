@@ -152,14 +152,14 @@ Computer Graphics: In 3D rendering, orthogonal projections are used to create 2D
 Data Science and Machine Learning: In high-dimensional data, projection methods are used to reduce dimensions (e.g., Principal Component Analysis) by projecting data onto lower-dimensional subspaces, helping with data visualization and reducing computational complexity.
 
 """
-def dot(v1, v2):
-    return sum([ax1 * ax2 for ax1, ax2 in zip(v1, v2)])
 
-def scalar_mult(scalar, v):
-    return [scalar * ax for ax in v]
+from collections import Counter
 
-def orthogonal_projection(v, L):
-    L_mag_sq = dot(L, L)
-    proj_scalar = dot(v, L) / L_mag_sq
-    proj_v = scalar_mult(proj_scalar, L)
-    return [round(x, 3) for x in proj_v]
+def confusion_matrix(data):
+    # Count all occurrences
+    counts = Counter(tuple(pair) for pair in data)
+    # Get metrics
+    TP, FN, FP, TN = counts[(1, 1)], counts[(1, 0)], counts[(0, 1)], counts[(0, 0)]
+    # Define matrix and return
+    confusion_matrix = [[TP, FN], [FP, TN]]
+    return confusion_matrix
