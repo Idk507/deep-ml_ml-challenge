@@ -45,13 +45,7 @@ The sigmoid function is particularly useful for turning logits (raw prediction v
 
 import math
 
-def poisson_probability(k, lam):
-	"""
-	Calculate the probability of observing exactly k events in a fixed interval,
-	given the mean rate of events lam, using the Poisson distribution formula.
-	:param k: Number of events (non-negative integer)
-	:param lam: The average rate (mean) of occurrences in a fixed interval
-	"""
-	# Your code here
-	val = (lam**k)*math.exp(-lam)/math.factorial(k)
-	return round(val,5)
+def sigmoid(z: float) -> float:
+	exp = math.exp(-z)
+	result = 1/(1+exp)
+	return round(result,4)
