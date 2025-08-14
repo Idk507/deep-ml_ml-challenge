@@ -63,59 +63,44 @@ import itertools
 from collections import defaultdict
 
 def apriori(transactions, min_support=0.5, max_length=None):
-    total_transactions = len(transactions)
-    min_count = min_support * total_transactions
-    transactions = list(map(set, transactions))  # Ensure all transactions are sets
+    if not transactions:
+        raise ValueError('Transaction list cannot be empty')
+    if not 0 < min_support <= 1:
+        raise ValueError('Minimum support must be between 0 and 1')
 
-    # Step 1: Count 1-itemsets
+    num_transactions = len(transactions)
+    min_support_count = min_support * num_transactions
     item_counts = defaultdict(int)
     for transaction in transactions:
         for item in transaction:
             item_counts[frozenset([item])] += 1
-
-    # Filter by min_support
-    frequent_itemsets = {
-        itemset: count / total_transactions
-        for itemset, count in item_counts.items()
-        if count >= min_count
-    }
-
-    current_frequents = set(frequent_itemsets.keys())
-    k = 2
-
-    while current_frequents:
-        # Stop if max_length is reached
-        if max_length and k > max_length:
-            break
-
-        # Generate candidate k-itemsets from frequent (k-1)-itemsets
-        candidates = set()
-        items = set()
-        for itemset in current_frequents:
-            items |= itemset
-        for combo in itertools.combinations(items, k):
-            candidate = frozenset(combo)
-            # Prune: all (k-1)-subsets must be frequent
-            if all(frozenset(subset) in current_frequents for subset in itertools.combinations(candidate, k - 1)):
-                candidates.add(candidate)
-
-        # Count support for candidates
+    frequent_itemsets = {itemset: count for itemset, count in item_counts.items() if count >= min_support_count}
+    k = 1
+    all_frequent_itemsets = dict(frequent_itemsets)
+    while frequent_itemsets and (max_length is None or k < max_length):
+        k += 1
+        candidates = generate_candidates(frequent_itemsets.keys(), k)
         candidate_counts = defaultdict(int)
         for transaction in transactions:
+            transaction_set = frozenset(transaction)
             for candidate in candidates:
-                if candidate.issubset(transaction):
+                if candidate.issubset(transaction_set):
                     candidate_counts[candidate] += 1
+        frequent_itemsets = {itemset: count for itemset, count in candidate_counts.items() if count >= min_support_count}
+        all_frequent_itemsets.update(frequent_itemsets)
+    return {itemset: count / num_transactions for itemset, count in all_frequent_itemsets.items()}
 
-        # Filter by min_support
-        current_frequents = {
-            itemset: count / total_transactions
-            for itemset, count in candidate_counts.items()
-            if count >= min_count
-        }
-
-        # Add to global frequent itemsets
-        frequent_itemsets.update(current_frequents)
-        current_frequents = set(current_frequents.keys())
-        k += 1
-
-    return frequent_itemsets
+def generate_candidates(prev_frequent_itemsets, k):
+    candidates = set()
+    prev_frequent_list = sorted(list(prev_frequent_itemsets), key=lambda x: sorted(x))
+    for i in range(len(prev_frequent_list)):
+        for j in range(i + 1, len(prev_frequent_list)):
+            itemset1 = prev_frequent_list[i]
+            itemset2 = prev_frequent_list[j]
+            if k > 2:
+                if sorted(itemset1)[:-1] != sorted(itemset2)[:-1]:
+                    continue
+            new_candidate = itemset1 | itemset2
+            if len(new_candidate) == k:
+                candidates.add(new_candidate)
+    return candidates
