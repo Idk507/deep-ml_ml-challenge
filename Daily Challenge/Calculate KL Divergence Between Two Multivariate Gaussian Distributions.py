@@ -1,0 +1,791 @@
+"""
+KL divergence measures the dissimilarity between two probability distributions. In this problem, you'll implement a function to compute the KL divergence between two multivariate Gaussian distributions given their means and covariance matrices. Use the provided mathematical formulas and numerical considerations to ensure accuracy.
+
+Example:
+Input:
+mu_p, Cov_p, mu_q, Cov_q for two random multivariate Gaussians
+Output:
+A float representing the KL divergence
+Reasoning:
+The KL divergence is calculated using the formula: 0.5 * (log det term, minus dimension p, Mahalanobis distance between means, and trace term). It measures how dissimilar the second Gaussian is from the first.
+
+KL divergence and its properties
+KL divergence is used as a measure of dissimilarity between two distributions. It is defined by the following formula:
+
+D
+K
+L
+(
+P
+∣
+∣
+Q
+)
+=
+E
+x
+∼
+P
+(
+X
+)
+l
+o
+g
+P
+(
+X
+)
+Q
+(
+X
+)
+,
+D 
+KL
+​
+ (P∣∣Q)=E 
+x∼P(X)
+​
+ log 
+Q(X)
+P(X)
+​
+ ,
+where 
+P
+(
+X
+)
+P(X) observed distribution we compare everything else with and 
+Q
+(
+X
+)
+Q(X) is usually the varying one; 
+P
+(
+X
+)
+P(X) and 
+Q
+(
+X
+)
+Q(X) are PMF (but could also be denoted as PDFs 
+f
+(
+x
+)
+f(x) and 
+q
+(
+x
+)
+q(x) in continuos case). The function has following properties:
+
+D
+K
+L
+≥
+0
+D 
+KL
+​
+ ≥0
+assymetry: 
+D
+K
+L
+(
+P
+∣
+∣
+Q
+)
+≠
+D
+K
+L
+(
+Q
+∣
+∣
+P
+)
+D 
+KL
+​
+ (P∣∣Q)
+
+=D 
+KL
+​
+ (Q∣∣P)
+Finding 
+D
+K
+L
+D 
+KL
+​
+  between two multivariate Gaussians
+Consider two multivariate Normal distributions:
+
+p
+(
+x
+)
+∼
+N
+(
+μ
+1
+,
+Σ
+1
+)
+,
+q
+(
+x
+)
+∼
+N
+(
+μ
+2
+,
+Σ
+2
+)
+p(x)∼N(μ 
+1
+​
+ ,Σ 
+1
+​
+ ),
+q(x)∼N(μ 
+2
+​
+ ,Σ 
+2
+​
+ )
+PDF of a multivariate Normal distribution is defined as:
+
+f
+(
+x
+)
+=
+1
+(
+2
+π
+)
+p
+2
+∣
+Σ
+∣
+1
+2
+e
+x
+p
+(
+−
+1
+2
+(
+x
+−
+μ
+)
+T
+Σ
+−
+1
+(
+x
+−
+μ
+)
+)
+,
+f(x)= 
+(2π) 
+2
+p
+​
+ 
+ ∣Σ∣ 
+2
+1
+​
+ 
+ 
+1
+​
+ exp(− 
+2
+1
+​
+ (x−μ) 
+T
+ Σ 
+−1
+ (x−μ)),
+where 
+Σ
+Σ - covariance matrix, 
+∣
+⋅
+∣
+∣⋅∣ - determinant, 
+p
+p - size of the random vector, i.e. number of different normally distributed features inside 
+P
+P and 
+Q
+Q and 
+x
+x usually denotes 
+x
+T
+x 
+T
+ , which is a random vector of size 
+p
+×
+1
+p×1.
+
+Now we can move onto calculating KL divergence for these two distributions, skipping the division part of two PDFs:
+
+1
+2
+[
+E
+p
+l
+o
+g
+∣
+Σ
+q
+∣
+∣
+Σ
+p
+∣
+[1]
+−
+E
+p
+(
+x
+−
+μ
+p
+)
+T
+Σ
+p
+−
+1
+(
+x
+−
+μ
+p
+)
+[2]
++
++
+E
+p
+(
+x
+−
+μ
+q
+)
+T
+Σ
+q
+−
+1
+(
+x
+−
+μ
+q
+)
+[3]
+]
+=
+=
+1
+2
+[
+l
+o
+g
+∣
+Σ
+q
+∣
+∣
+Σ
+p
+∣
+−
+p
++
+(
+μ
+p
+−
+μ
+q
+)
+T
+Σ
+q
+−
+1
+(
+μ
+p
+−
+μ
+q
+)
++
++
+t
+r
+(
+Σ
+q
+−
+1
+Σ
+p
+)
+]
+,
+2
+1
+​
+ [E 
+p
+​
+ log 
+∣Σ 
+p
+​
+ ∣
+∣Σ 
+q
+​
+ ∣
+​
+  
+[1]
+ −E 
+p
+​
+ (x−μ 
+p
+​
+ ) 
+T
+ Σ 
+p
+−1
+​
+ (x−μ 
+p
+​
+ ) 
+[2]
+ +
++E 
+p
+​
+ (x−μ 
+q
+​
+ ) 
+T
+ Σ 
+q
+−1
+​
+ (x−μ 
+q
+​
+ ) 
+[3]
+ ]=
+= 
+2
+1
+​
+ [log 
+∣Σ 
+p
+​
+ ∣
+∣Σ 
+q
+​
+ ∣
+​
+ −p+(μ 
+p
+​
+ −μ 
+q
+​
+ ) 
+T
+ Σ 
+q
+−1
+​
+ (μ 
+p
+​
+ −μ 
+q
+​
+ )+
++tr(Σ 
+q
+−1
+​
+ Σ 
+p
+​
+ )],
+where in order to achieve an equality we proceed to do 
+[1]
+:
+[1]:
+
+l
+o
+g
+∣
+Σ
+q
+∣
+∣
+Σ
+p
+∣
+=
+c
+o
+n
+s
+t
+  
+⟹
+  
+EV equals to the value itself;
+log 
+∣Σ 
+p
+​
+ ∣
+∣Σ 
+q
+​
+ ∣
+​
+ =const⟹EV equals to the value itself;
+then 
+[2]
+:
+[2]:
+
+(
+x
+−
+μ
+p
+)
+T
+N
+×
+p
+∗
+∑
+p
+×
+p
+∗
+(
+x
+−
+μ
+p
+)
+T
+N
+×
+p
+=
+A
+N
+×
+N
+, where 
+N
+=
+1
+  
+⟹
+  
+  
+⟹
+  
+A
+=
+tr
+⁡
+(
+A
+)
+N×p
+(x−μ 
+p
+​
+ ) 
+T
+ 
+​
+ ∗ 
+p×p
+∑
+​
+ ∗ 
+N×p
+(x−μ 
+p
+​
+ ) 
+T
+ 
+​
+ = 
+N×N
+A
+​
+ , where N=1⟹
+⟹A=tr(A)
+Recall that:
+
+tr
+⁡
+(
+A
+B
+C
+)
+=
+tr
+⁡
+(
+B
+C
+A
+)
+=
+tr
+⁡
+(
+C
+B
+A
+)
+tr(ABC)=tr(BCA)=tr(CBA)
+Then:
+
+tr
+⁡
+(
+A
+)
+=
+tr
+⁡
+(
+(
+x
+−
+μ
+p
+)
+⊤
+(
+x
+−
+μ
+p
+)
+Σ
+p
+−
+1
+)
+=
+tr
+⁡
+(
+Σ
+p
+Σ
+p
+−
+1
+)
+=
+tr
+⁡
+(
+I
+)
+=
+p
+tr(A)=tr((x−μ 
+p
+​
+ ) 
+⊤
+ (x−μ 
+p
+​
+ )Σ 
+p
+−1
+​
+ )
+=tr(Σ 
+p
+​
+ Σ 
+p
+−1
+​
+ )=tr(I)=p
+and finally 
+[3]
+[3], where we should recall, that for multivariate Normal distributions this is true (
+x
+∼
+N
+(
+μ
+2
+,
+Σ
+2
+)
+x∼N(μ 
+2
+​
+ ,Σ 
+2
+​
+ )):
+
+E
+(
+x
+−
+μ
+1
+)
+T
+A
+(
+x
+−
+μ
+1
+)
+=
+=
+(
+μ
+2
+−
+μ
+1
+)
+T
+A
+(
+μ
+2
+−
+μ
+1
+)
++
+t
+r
+(
+A
+Σ
+2
+)
+E(x−μ 
+1
+​
+ ) 
+T
+ A(x−μ 
+1
+​
+ )=
+=(μ 
+2
+​
+ −μ 
+1
+​
+ ) 
+T
+ A(μ 
+2
+​
+ −μ 
+1
+​
+ )+tr(AΣ 
+2
+​
+ )
+
+ """
+
+import numpy as np
+
+def multivariate_kl_divergence(mu_p:np.ndarray, Cov_p:np.ndarray, 
+                               mu_q:np.ndarray, Cov_q:np.ndarray) -> float:
+
+    def trace(x: np.ndarray) -> float:
+        return np.diag(x).sum()
+
+    p = Cov_p.shape[0]
+    return float(1/2 * (
+        np.log(np.linalg.det(Cov_q)/np.linalg.det(Cov_p))         - p + (mu_p-mu_q).T @ np.linalg.inv(Cov_q) @ (mu_p-mu_q)         + trace(np.linalg.inv(Cov_q) @ Cov_p)
+    ))
