@@ -19,25 +19,23 @@ Recall = Matches / Reference Length = 7 / 9 ~ 0.778
 - Final METEOR Score METEOR = F_mean * (1 - Penalty) = 0.779 * (1 - 0.039) = 0.779 * 0.961 â 0.749 import numpy as np from collections import Counter
 
 """
-import numpy as np
-
 def meteor_score(reference, candidate, alpha=0.9, beta=3, gamma=0.5):
-    # Tokenize
+    # Tokenize and lowercase
     ref_tokens = reference.lower().split()
     cand_tokens = candidate.lower().split()
 
-    # Unigram matching
+    # Count matches with exact unigram matching
     ref_counts = {}
     for word in ref_tokens:
         ref_counts[word] = ref_counts.get(word, 0) + 1
 
     matches = []
-    used = set()
+    used_ref = {}
     for i, word in enumerate(cand_tokens):
         if word in ref_counts and ref_counts[word] > 0:
             matches.append((i, word))
             ref_counts[word] -= 1
-            used.add(i)
+            used_ref[word] = used_ref.get(word, []) + [i]
 
     match_count = len(matches)
     if match_count == 0:
@@ -51,10 +49,24 @@ def meteor_score(reference, candidate, alpha=0.9, beta=3, gamma=0.5):
     f_mean = (precision * recall) / (alpha * precision + (1 - alpha) * recall)
 
     # Chunk calculation
-    match_indices = [i for i, _ in matches]
+    # Get reference indices for matched words in candidate order
+    ref_indices = []
+    ref_map = {}
+    for i, word in enumerate(ref_tokens):
+        ref_map.setdefault(word, []).append(i)
+
+    used_positions = set()
+    for _, word in matches:
+        for pos in ref_map[word]:
+            if pos not in used_positions:
+                ref_indices.append(pos)
+                used_positions.add(pos)
+                break
+
+    # Count chunks: discontinuities in reference indices
     chunks = 1
-    for i in range(1, len(match_indices)):
-        if match_indices[i] != match_indices[i - 1] + 1:
+    for i in range(1, len(ref_indices)):
+        if ref_indices[i] != ref_indices[i - 1] + 1:
             chunks += 1
 
     # Penalty
