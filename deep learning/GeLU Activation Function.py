@@ -1,0 +1,7 @@
+import numpy as np
+
+def gelu(x):
+    return np.round(
+        0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x**3))),
+        4
+    )
