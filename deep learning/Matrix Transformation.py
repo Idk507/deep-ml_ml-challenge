@@ -308,11 +308,8 @@ def transform_matrix(A: list[list[int|float]], T: list[list[int|float]], S: list
 	A = np.asarray(A)
     T = np.asarray(T)
     S = np.asarray(S)
-    if np.linalg.det(T) == 0 and np.linalg.det(S) == 0 :
+    if np.linalg.det(T) == 0 or np.linalg.det(S) == 0 :
         return  -1
     T_inv = np.linalg.inv(T)
     res = T_inv @ A @ S 
     return res.tolist()
-
-
- """"
