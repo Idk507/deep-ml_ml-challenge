@@ -8,7 +8,7 @@ Implement the Adadelta optimizer update step function. Your function should take
 Example:
 Input:
 parameter = 1.0, grad = 0.1, u = 1.0, v = 1.0, rho = 0.95, epsilon = 1e-6
-Output:
+Output:   
 (0.89743, 0.9505, 0.95053)
 Reasoning:
 Learn About topic
